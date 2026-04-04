@@ -92,18 +92,18 @@ impl FocusFlowApp {
         style.visuals.panel_fill = egui::Color32::from_rgb(32, 37, 45);
         style.visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(45, 50, 60);
         style.visuals.extreme_bg_color = egui::Color32::from_rgb(20, 24, 30);
-        style.visuals.selection.bg_fill = egui::Color32::from_rgb(16, 185, 129, 200);
+        style.visuals.selection.bg_fill = egui::Color32::from_rgba_unmultiplied(16, 185, 129, 200);
         style.visuals.selection.stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(16, 185, 129));
         style.visuals.window_shadow = egui::epaint::Shadow {
-            offset: egui::vec2(0.0, 4.0),
-            blur: 20.0,
-            spread: 0.0,
+            offset: [(0.0) as i8, (4.0) as i8],
+            blur: 20.0 as u8,
+            spread: 0.0 as u8,
             color: egui::Color32::from_black_alpha(80),
         };
         style.visuals.popup_shadow = egui::epaint::Shadow {
-            offset: egui::vec2(0.0, 4.0),
-            blur: 16.0,
-            spread: 0.0,
+            offset: [(0.0) as i8, (4.0) as i8],
+            blur: 16.0 as u8,
+            spread: 0.0 as u8,
             color: egui::Color32::from_black_alpha(60),
         };
         cc.egui_ctx.set_style(style);
@@ -436,27 +436,27 @@ impl eframe::App for FocusFlowApp {
                 .resizable(false)
                 .frame(egui::Frame::window(&ctx.style())
                     .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .rounding(egui::Rounding::same(12.0))
+                    .corner_radius(egui::CornerRadius::same(12))
                     .shadow(egui::epaint::Shadow {
-                        offset: egui::vec2(0.0, 4.0),
-                        blur: 16.0,
-                        spread: 0.0,
+                        offset: [(0.0) as i8, (4.0) as i8],
+                        blur: 16.0 as u8,
+                        spread: 0.0 as u8,
                         color: egui::Color32::from_black_alpha(60),
                     }))
                 .title_bar(false)
                 .show(ctx, |ui| {
                     ui.horizontal(|ui| {
-                        if ui.add(egui::Button::new("📂").desired_size(egui::vec2(36.0, 36.0)))
+                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("📂"))
                             .on_hover_text("Open file (Ctrl+O)").clicked() 
                         {
                             // Open file dialog
                         }
-                        if ui.add(egui::Button::new("💾").desired_size(egui::vec2(36.0, 36.0)))
+                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("💾"))
                             .on_hover_text("Save (Ctrl+S)").clicked() 
                         {
                             self.save_file();
                         }
-                        if ui.add(egui::Button::new("🔄").desired_size(egui::vec2(36.0, 36.0)))
+                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("🔄"))
                             .on_hover_text("Reload (F5)").clicked() 
                         {
                             let path = self.file_path.clone();
@@ -465,17 +465,17 @@ impl eframe::App for FocusFlowApp {
                             }
                         }
                         ui.separator();
-                        if ui.add(egui::Button::new("✨").desired_size(egui::vec2(36.0, 36.0)))
+                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("✨"))
                             .on_hover_text("New focus").clicked() 
                         {
                             self.create_new_focus();
                         }
-                        if ui.add(egui::Button::new("✏️").desired_size(egui::vec2(36.0, 36.0)))
+                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("✏️"))
                             .on_hover_text("Edit selected (E)").clicked() 
                         {
                             self.open_editor();
                         }
-                        if ui.add(egui::Button::new("🗑️").desired_size(egui::vec2(36.0, 36.0)))
+                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("🗑️"))
                             .on_hover_text("Delete (Del)").clicked() 
                         {
                             self.delete_selected_focus();
@@ -495,11 +495,11 @@ impl eframe::App for FocusFlowApp {
                 .movable(false)
                 .frame(egui::Frame::window(&ctx.style())
                     .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .rounding(egui::Rounding::same(12.0))
+                    .corner_radius(egui::CornerRadius::same(12))
                     .shadow(egui::epaint::Shadow {
-                        offset: egui::vec2(0.0, 4.0),
-                        blur: 16.0,
-                        spread: 0.0,
+                        offset: [(0.0) as i8, (4.0) as i8],
+                        blur: 16.0 as u8,
+                        spread: 0.0 as u8,
                         color: egui::Color32::from_black_alpha(60),
                     }))
                 .title_bar(false)
@@ -529,44 +529,44 @@ impl eframe::App for FocusFlowApp {
             .movable(false)
             .frame(egui::Frame::window(&ctx.style())
                 .fill(egui::Color32::from_rgb(28, 32, 40))
-                .rounding(egui::Rounding::same(12.0))
+                .corner_radius(egui::CornerRadius::same(12))
                 .shadow(egui::epaint::Shadow {
-                    offset: egui::vec2(0.0, 4.0),
-                    blur: 16.0,
-                    spread: 0.0,
+                    offset: [(0.0) as i8, (4.0) as i8],
+                    blur: 16.0 as u8,
+                    spread: 0.0 as u8,
                     color: egui::Color32::from_black_alpha(60),
                 }))
             .title_bar(false)
             .show(ctx, |ui| {
                 ui.horizontal_centered(|ui| {
-                    if ui.add(egui::Button::new("📋 List").desired_size(egui::vec2(70.0, 32.0)))
+                    if ui.add_sized(egui::vec2(70.0, 32.0), egui::Button::new("📋 List"))
                         .on_hover_text("List view").clicked() 
                     {
                         self.view_mode = AppView::List;
                     }
-                    if ui.add(egui::Button::new("🌐 Canvas").desired_size(egui::vec2(70.0, 32.0)))
+                    if ui.add_sized(egui::vec2(70.0, 32.0), egui::Button::new("🌐 Canvas"))
                         .on_hover_text("Canvas view").clicked() 
                     {
                         self.view_mode = AppView::Canvas;
                     }
                     ui.separator();
-                    if ui.add(egui::Button::new("↩️").desired_size(egui::vec2(36.0, 32.0)))
+                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("↩️"))
                         .on_hover_text("Undo (Ctrl+Z)").clicked() 
                     {
                         self.undo();
                     }
-                    if ui.add(egui::Button::new("↪️").desired_size(egui::vec2(36.0, 32.0)))
+                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("↪️"))
                         .on_hover_text("Redo (Ctrl+Y)").clicked() 
                     {
                         self.redo();
                     }
                     ui.separator();
-                    if ui.add(egui::Button::new("🔍").desired_size(egui::vec2(36.0, 32.0)))
+                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("🔍"))
                         .on_hover_text("Validate").clicked() 
                     {
                         self.run_validation();
                     }
-                    if ui.add(egui::Button::new("📊").desired_size(egui::vec2(36.0, 32.0)))
+                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("📊"))
                         .on_hover_text("Diff preview").clicked() 
                     {
                         self.show_diff = !self.show_diff;
@@ -706,11 +706,11 @@ impl eframe::App for FocusFlowApp {
                 .resizable(false)
                 .frame(egui::Frame::window(&ctx.style())
                     .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .rounding(egui::Rounding::same(12.0))
+                    .corner_radius(egui::CornerRadius::same(12))
                     .shadow(egui::epaint::Shadow {
-                        offset: egui::vec2(0.0, 4.0),
-                        blur: 16.0,
-                        spread: 0.0,
+                        offset: [(0.0) as i8, (4.0) as i8],
+                        blur: 16.0 as u8,
+                        spread: 0.0 as u8,
                         color: egui::Color32::from_black_alpha(60),
                     }))
                 .open(&mut editor_open)
@@ -730,11 +730,11 @@ impl eframe::App for FocusFlowApp {
                 .resizable(false)
                 .frame(egui::Frame::window(&ctx.style())
                     .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .rounding(egui::Rounding::same(12.0))
+                    .corner_radius(egui::CornerRadius::same(12))
                     .shadow(egui::epaint::Shadow {
-                        offset: egui::vec2(0.0, 4.0),
-                        blur: 16.0,
-                        spread: 0.0,
+                        offset: [(0.0) as i8, (4.0) as i8],
+                        blur: 16.0 as u8,
+                        spread: 0.0 as u8,
                         color: egui::Color32::from_black_alpha(60),
                     }))
                 .open(&mut validation_open)
@@ -760,11 +760,11 @@ impl eframe::App for FocusFlowApp {
                 .resizable(false)
                 .frame(egui::Frame::window(&ctx.style())
                     .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .rounding(egui::Rounding::same(12.0))
+                    .corner_radius(egui::CornerRadius::same(12))
                     .shadow(egui::epaint::Shadow {
-                        offset: egui::vec2(0.0, 4.0),
-                        blur: 16.0,
-                        spread: 0.0,
+                        offset: [(0.0) as i8, (4.0) as i8],
+                        blur: 16.0 as u8,
+                        spread: 0.0 as u8,
                         color: egui::Color32::from_black_alpha(60),
                     }))
                 .open(&mut diff_open)
@@ -1359,3 +1359,6 @@ impl FocusFlowApp {
     }
     
 }
+
+
+
