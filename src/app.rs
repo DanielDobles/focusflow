@@ -85,26 +85,41 @@ pub struct FocusFlowApp {
 
 impl FocusFlowApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+        // Millennium Command Style Initialization
         let mut style = (*cc.egui_ctx.style()).clone();
-        style.spacing.item_spacing = egui::vec2(10.0, 10.0);
-        style.visuals.window_fill = egui::Color32::from_rgba_unmultiplied(26, 28, 32, 230);
-        style.visuals.panel_fill = egui::Color32::from_rgb(17, 19, 23);
-        style.visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(30, 32, 36); 
-        style.visuals.extreme_bg_color = egui::Color32::from_rgb(12, 14, 18); 
-        style.visuals.selection.bg_fill = egui::Color32::from_rgba_unmultiplied(0, 227, 139, 60); 
-        style.visuals.selection.stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(0, 227, 139)); 
-        style.visuals.window_stroke = egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(134, 148, 138, 40));
+        
+        // Obsidian & Charcoal Palette
+        let obsidian = egui::Color32::from_rgb(18, 19, 23);
+        let charcoal = egui::Color32::from_rgb(28, 30, 34);
+        let tactical_cyan = egui::Color32::from_rgb(102, 252, 241);
+        let deep_black = egui::Color32::from_rgb(11, 12, 16);
+        
+        style.spacing.item_spacing = egui::vec2(12.0, 12.0);
+        style.visuals.window_fill = egui::Color32::from_rgba_unmultiplied(18, 19, 23, 240);
+        style.visuals.panel_fill = deep_black;
+        style.visuals.widgets.noninteractive.bg_fill = charcoal;
+        style.visuals.extreme_bg_color = deep_black;
+        
+        // High-fidelity selection accents
+        style.visuals.selection.bg_fill = egui::Color32::from_rgba_unmultiplied(102, 252, 241, 40);
+        style.visuals.selection.stroke = egui::Stroke::new(1.0, tactical_cyan);
+        
+        // No-line window frames (depth via tonal layering)
+        style.visuals.window_stroke = egui::Stroke::NONE;
         style.visuals.window_shadow = egui::epaint::Shadow {
-            offset: [(0.0) as i8, (8.0) as i8],
-            blur: 24.0 as u8,
-            spread: 0.0 as u8,
-            color: egui::Color32::from_black_alpha(150),
+            offset: [(0.0) as i8, (12.0) as i8],
+            blur: 40.0 as u8,
+            spread: 2.0 as u8,
+            color: egui::Color32::from_black_alpha(200),
         };
-        style.visuals.popup_shadow = style.visuals.window_shadow.clone();
+        style.visuals.popup_shadow = style.visuals.window_shadow;
+        
         cc.egui_ctx.set_style(style);
         
         let mut visuals = egui::Visuals::dark();
-        visuals.override_text_color = Some(egui::Color32::from_rgb(226, 226, 232));
+        visuals.override_text_color = Some(egui::Color32::from_rgb(197, 198, 199)); // Operational Gray
+        visuals.widgets.active.bg_fill = tactical_cyan;
+        visuals.widgets.hovered.bg_fill = egui::Color32::from_rgb(69, 162, 158); // Emerald hover
         cc.egui_ctx.set_visuals(visuals);
         
         Self {
@@ -424,12 +439,13 @@ impl eframe::App for FocusFlowApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.handle_keyboard(ctx);
 
-        let primary = egui::Color32::from_rgb(0, 227, 139);
-        let secondary = egui::Color32::from_rgb(255, 207, 143);
-        let error = egui::Color32::from_rgb(255, 180, 171);
-        let surface_container_high = egui::Color32::from_rgba_unmultiplied(40, 42, 46, 240);
-        let surface = egui::Color32::from_rgb(17, 19, 23);
-        let on_surface = egui::Color32::from_rgb(226, 226, 232);
+        let tactical_blue = egui::Color32::from_rgb(59, 130, 246);
+        let warning_amber = egui::Color32::from_rgb(245, 158, 11);
+        let error_crimson = egui::Color32::from_rgb(239, 68, 68);
+        let surface_high = egui::Color32::from_rgb(26, 28, 34);
+        let surface = egui::Color32::from_rgb(15, 17, 21);
+        let on_surface = egui::Color32::from_rgb(229, 231, 235);
+        let muted_gray = egui::Color32::from_rgb(107, 114, 128);
         
         egui::CentralPanel::default().frame(egui::Frame::NONE.fill(surface)).show(ctx, |ui| {
             if self.view_mode == AppView::Canvas {
@@ -439,7 +455,7 @@ impl eframe::App for FocusFlowApp {
                     .id(egui::Id::new("list_view_window"))
                     .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
                     .default_size(egui::vec2(1000.0, 700.0))
-                    .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(1.0, egui::Color32::from_white_alpha(20))))
+                    .frame(egui::Frame::window(&ctx.style()).fill(surface_high).stroke(egui::Stroke::new(1.0, egui::Color32::from_white_alpha(15))))
                     .title_bar(false)
                     .show(ctx, |ui| {
                         ui.horizontal(|ui| {
@@ -455,29 +471,29 @@ impl eframe::App for FocusFlowApp {
                 .fixed_pos(egui::pos2(120.0, 100.0))
                 .fixed_size(egui::vec2(280.0, 200.0))
                 .resizable(false).title_bar(false)
-                .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(2.0, primary)))
+                .frame(egui::Frame::window(&ctx.style()).fill(surface_high).stroke(egui::Stroke::new(1.5, tactical_blue)))
                 .show(ctx, |ui| {
                     ui.horizontal(|ui| {
-                        ui.label(egui::RichText::new("TERMINAL").color(primary).size(10.0));
-                        ui.label(egui::RichText::new("COMMAND PROTOCOLS").color(primary).size(12.0).strong());
+                        ui.label(egui::RichText::new("TERMINAL").color(tactical_blue).size(10.0).monospace());
+                        ui.label(egui::RichText::new("COMMAND PROTOCOLS").color(tactical_blue).size(12.0).strong());
                     });
                     ui.add_space(16.0);
                     
                     let btn_style = egui::vec2(ui.available_width(), 36.0);
                     
-                    let b1 = egui::Button::new(egui::RichText::new("NEW MISSION").size(11.0).strong().color(on_surface)).fill(egui::Color32::from_rgb(30, 32, 36));
+                    let b1 = egui::Button::new(egui::RichText::new("NEW MISSION").size(11.0).strong().color(on_surface)).fill(egui::Color32::from_rgb(31, 33, 40));
                     if ui.add_sized(btn_style, b1).clicked() { self.create_new_focus(); }
                     
                     ui.add_space(4.0);
                     
-                    let b2 = egui::Button::new(egui::RichText::new("ARCHIVE MAP (RELOAD)").size(11.0).strong().color(on_surface)).fill(egui::Color32::from_rgb(30, 32, 36));
+                    let b2 = egui::Button::new(egui::RichText::new("ARCHIVE MAP (RELOAD)").size(11.0).strong().color(on_surface)).fill(egui::Color32::from_rgb(31, 33, 40));
                     if ui.add_sized(btn_style, b2).clicked() {
                         if let Some(path) = self.file_path.clone() { self.load_file(&path); }
                     }
                     
                     ui.add_space(4.0);
                     
-                    let b3 = egui::Button::new(egui::RichText::new("SYNC INTEL (SAVE)").size(11.0).strong().color(primary)).fill(egui::Color32::from_rgb(30, 32, 36));
+                    let b3 = egui::Button::new(egui::RichText::new("SYNC INTEL (SAVE)").size(11.0).strong().color(tactical_blue)).fill(egui::Color32::from_rgb(31, 33, 40));
                     if ui.add_sized(btn_style, b3).clicked() { self.save_file(); }
                 });
 
@@ -488,14 +504,14 @@ impl eframe::App for FocusFlowApp {
                     .fixed_pos(egui::pos2(ctx.screen_rect().right() - 400.0, 100.0))
                     .fixed_size(egui::vec2(360.0, ctx.screen_rect().height() - 320.0))
                     .resizable(false).title_bar(false)
-                    .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(1.0, egui::Color32::from_white_alpha(30))))
+                    .frame(egui::Frame::window(&ctx.style()).fill(surface_high).stroke(egui::Stroke::new(1.0, egui::Color32::from_white_alpha(20))))
                     .open(&mut editor_open)
                     .show(ctx, |ui| {
                         ui.horizontal(|ui| {
                             ui.vertical(|ui| {
-                                ui.label(egui::RichText::new("NODE JURISDICTION").color(secondary).size(12.0).strong());
+                                ui.label(egui::RichText::new("NODE JURISDICTION").color(warning_amber).size(12.0).strong());
                                 if let Some(f) = &self.editing_focus {
-                                    ui.label(egui::RichText::new(format!("ID: {}", f.id)).color(egui::Color32::from_white_alpha(100)).size(10.0));
+                                    ui.label(egui::RichText::new(format!("OBJECT_ID: {}", f.id)).color(muted_gray).size(10.0).monospace());
                                 }
                             });
                         });
@@ -511,7 +527,7 @@ impl eframe::App for FocusFlowApp {
                 .fixed_pos(egui::pos2(ctx.screen_rect().right() - 400.0, ctx.screen_rect().bottom() - 180.0))
                 .fixed_size(egui::vec2(360.0, 150.0))
                 .resizable(false).title_bar(false)
-                .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(2.0, secondary)))
+                .frame(egui::Frame::window(&ctx.style()).fill(surface_high).stroke(egui::Stroke::new(2.0, warning_amber)))
                 .show(ctx, |ui| {
                     ui.horizontal(|ui| {
                         ui.label(egui::RichText::new("OPERATIONAL READINESS").color(on_surface).size(12.0).strong());
@@ -527,7 +543,7 @@ impl eframe::App for FocusFlowApp {
                     };
                     ui.label(egui::RichText::new(text).color(egui::Color32::from_white_alpha(150)).size(10.0));
                     ui.add_space(12.0);
-                    if ui.add_sized(egui::vec2(ui.available_width(), 36.0), egui::Button::new(egui::RichText::new("COMMIT SELECTION").color(egui::Color32::BLACK).strong()).fill(secondary)).clicked() {
+                    if ui.add_sized(egui::vec2(ui.available_width(), 36.0), egui::Button::new(egui::RichText::new("COMMIT SELECTION").color(deep_black).strong()).fill(warning_amber)).clicked() {
                         self.save_file();
                     }
                 });
@@ -543,8 +559,8 @@ impl eframe::App for FocusFlowApp {
                     .open(&mut v_open)
                     .show(ctx, |ui| {
                         ui.horizontal(|ui| {
-                            ui.label(egui::RichText::new("WARNING").color(error).size(10.0));
-                            ui.label(egui::RichText::new("URGENT INTEL").color(error).size(12.0).strong());
+                            ui.label(egui::RichText::new("WARNING").color(error_crimson).size(10.0).monospace());
+                            ui.label(egui::RichText::new("URGENT INTEL").color(error_crimson).size(12.0).strong());
                         });
                         ui.add_space(12.0);
                         self.ui_validation_panel(ui);
@@ -566,19 +582,19 @@ impl eframe::App for FocusFlowApp {
 
                     if ui.selectable_label(self.view_mode == AppView::Canvas, egui::RichText::new("NODES").size(12.0).strong()).clicked() { self.view_mode = AppView::Canvas; }
                     if ui.selectable_label(self.view_mode == AppView::List, egui::RichText::new("ASSETS").size(12.0).strong()).clicked() { self.view_mode = AppView::List; }
-                    if ui.selectable_label(self.show_diff, egui::RichText::new("INTEL").size(12.0).strong()).clicked() { self.show_diff = !self.show_diff; }
+                    if ui.selectable_label(self.show_diff, egui::RichText::new("INTEL & LOGS").size(12.0).strong()).clicked() { self.show_diff = !self.show_diff; }
 
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         let deploy_btn = ui.add(egui::Button::new(
-                            egui::RichText::new("DEPLOY OPERATIONS").color(egui::Color32::from_rgb(0, 66, 37)).size(12.0).strong()
-                        ).fill(egui::Color32::from_rgb(0, 186, 113)));
+                            egui::RichText::new("DEPLOY OPERATIONS").color(deep_black).size(12.0).strong()
+                        ).fill(egui::Color32::from_rgb(16, 185, 129)));
                         if deploy_btn.clicked() { self.save_file(); }
 
                         ui.add_space(16.0);
 
                         let read_btn = ui.add(egui::Button::new(
-                            egui::RichText::new("OPERATIONAL READINESS").color(egui::Color32::from_rgb(226, 226, 232)).size(12.0).strong()
-                        ).fill(egui::Color32::from_rgb(40, 42, 46)).stroke(egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(134, 148, 138, 50))));
+                            egui::RichText::new("OPERATIONAL READINESS").color(on_surface).size(12.0).strong()
+                        ).fill(egui::Color32::from_rgb(40, 42, 46)).stroke(egui::Stroke::new(1.0, tactical_blue)));
                         if read_btn.clicked() { self.run_validation(); }
                     });
                 });
@@ -961,23 +977,23 @@ impl FocusFlowApp {
                             let t2 = (i + 1) as f32 / steps as f32;
                             painter.line_segment(
                                 [screen_pos.lerp(prereq_pos, t1), screen_pos.lerp(prereq_pos, t2)],
-                                egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 227, 139)), // primary color dashed
+                                egui::Stroke::new(1.0, egui::Color32::from_rgb(59, 130, 246)), // Operational Blue
                             );
                         }
                     }
                     
                     // Arrow head
                     let dir = (screen_pos - prereq_pos).normalized();
-                    let arrow_size = 8.0;
-                    let tip = screen_pos - dir * 20.0 * self.canvas_zoom;
-                    let perp = egui::vec2(-dir.y, dir.x) * arrow_size;
+                    let arrow_size = 6.0 * self.canvas_zoom;
+                    let tip = screen_pos - dir * 25.0 * self.canvas_zoom;
+                    let perp = egui::vec2(-dir.y, dir.x) * (arrow_size * 0.5);
                     painter.line_segment(
                         [tip, tip - dir * arrow_size + perp],
-                        egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 227, 139)),
+                        egui::Stroke::new(1.0, egui::Color32::from_rgb(59, 130, 246)),
                     );
                     painter.line_segment(
                         [tip, tip - dir * arrow_size - perp],
-                        egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 227, 139)),
+                        egui::Stroke::new(1.0, egui::Color32::from_rgb(59, 130, 246)),
                     );
                 }
             }
@@ -988,63 +1004,35 @@ impl FocusFlowApp {
                     let (mx, my) = me.pixel_position(&tree, grid_w, grid_h);
                     let me_pos = egui::pos2(mx + offset.x, my + offset.y);
                     
-                    // Dashed line effect (draw multiple segments)
-                    let steps = 10;
-                    for i in 0..steps {
-                        if i % 2 == 0 {
-                            let t1 = i as f32 / steps as f32;
-                            let t2 = (i + 1) as f32 / steps as f32;
-                            let p1 = screen_pos.lerp(me_pos, t1);
-                            let p2 = screen_pos.lerp(me_pos, t2);
-                            painter.line_segment(
-                                [p1, p2],
-                                egui::Stroke::new(1.5, egui::Color32::from_rgb(255, 180, 171)), // error dashed
-                            );
-                        }
-                    }
+                    painter.line_segment(
+                        [screen_pos, me_pos],
+                        egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(239, 68, 68, 100)), // Critical Red
+                    );
                 }
             }
         }
         
         // Draw focus nodes
-        let node_w = 80.0 * self.canvas_zoom;
-        let node_h = 30.0 * self.canvas_zoom;
+        let node_w = 84.0 * self.canvas_zoom;
+        let node_h = 42.0 * self.canvas_zoom;
         
         for focus in &tree.focuses {
             let (fx, fy) = focus.pixel_position(&tree, grid_w, grid_h);
             let pos = egui::pos2(fx + offset.x, fy + offset.y);
-            let node_rect = egui::Rect::from_min_size(pos, egui::vec2(node_w, node_h));
+            let node_rect = egui::Rect::from_min_size(pos - egui::vec2(node_w/2.0, node_h/2.0), egui::vec2(node_w, node_h));
             
             let selected = self.selected_focus_idx.map_or(false, |idx| 
                 tree.focuses.get(idx).map_or(false, |f| f.id == focus.id)
             );
             
-            let _color = egui::Color32::from_rgb(
-                (focus.category_color()[0] * 255.0) as u8,
-                (focus.category_color()[1] * 255.0) as u8,
-                (focus.category_color()[2] * 255.0) as u8,
-            );
+            self.render_tactical_node(&painter, node_rect, focus, selected, self.canvas_zoom);
             
-            let fill_color = egui::Color32::from_rgb(30, 32, 36);
-            let stroke_color = if selected { egui::Color32::from_rgb(0, 227, 139) } else { egui::Color32::from_rgb(134, 148, 138) };
-            
-            if selected {
-                painter.circle_filled(node_rect.center(), node_rect.width() * 0.6, egui::Color32::from_rgba_unmultiplied(0, 227, 139, 30));
+            // Handle clicking
+            if response.clicked() && node_rect.contains(response.interact_pointer_pos().unwrap_or(egui::pos2(-1000.0, -1000.0))) {
+                if let Some(idx) = tree.focuses.iter().position(|f| f.id == focus.id) {
+                    self.selected_focus_idx = Some(idx);
+                }
             }
-            
-            painter.rect_filled(node_rect, 6.0, fill_color);
-            painter.rect_stroke(node_rect, 6.0, egui::Stroke::new(1.5, stroke_color), egui::StrokeKind::Inside);
-            
-            // Label
-            let label = focus.display_name();
-            let label = if label.len() > 15 { &label[..12] } else { label };
-            painter.text(
-                node_rect.center(),
-                egui::Align2::CENTER_CENTER,
-                label,
-                egui::FontId::proportional(10.0 * self.canvas_zoom),
-                egui::Color32::WHITE,
-            );
         }
         
         // Instructions
@@ -1186,17 +1174,91 @@ impl FocusFlowApp {
                 });
             }
             
-            if result.is_ok() {
-                ui.label(egui::RichText::new("✓ Sin problemas encontrados").color(egui::Color32::from_rgb(16, 185, 129)));
-            }
-        } else {
-            ui.label("Ejecuta validación para ver resultados");
-            if ui.button("Ejecutar Validación").clicked() {
-                self.run_validation();
+    
+    /// Render a high-fidelity tactical node (Palantir/Millennium style)
+    fn render_tactical_node(
+        &self,
+        painter: &egui::Painter,
+        rect: egui::Rect,
+        focus: &FocusNode,
+        selected: bool,
+        zoom: f32,
+    ) {
+        let charcoal = egui::Color32::from_rgb(28, 30, 34);
+        let tactical_blue = egui::Color32::from_rgb(59, 130, 246);
+        let deep_black = egui::Color32::from_rgb(11, 12, 16);
+        let border_color = if selected { tactical_blue } else { egui::Color32::from_rgb(60, 64, 72) };
+        
+        // 1. Draw persistent ambient glow for selected nodes
+        if selected {
+            for i in 1..=4 {
+                let glow_rect = rect.expand(i as f32 * 2.0 * zoom);
+                self.paint_octagon(painter, glow_rect, egui::Color32::from_rgba_unmultiplied(59, 130, 246, 20 / i), egui::Stroke::NONE);
             }
         }
+
+        // 2. Main Node Body (Octagon)
+        self.paint_octagon(painter, rect, charcoal, egui::Stroke::new(1.5 * zoom, border_color));
+
+        // 3. Header Bar (Precision Metadata)
+        let header_height = 8.0 * zoom;
+        let header_rect = egui::Rect::from_min_max(
+            rect.min,
+            egui::pos2(rect.max.x, rect.min.y + header_height)
+        );
+        self.paint_octagon_top(painter, header_rect, deep_black, egui::Stroke::NONE);
+        
+        // ID Label in Monospace
+        let id_text = if focus.id.len() > 10 { format!("{}...", &focus.id[..8]) } else { focus.id.clone() };
+        painter.text(
+            header_rect.center(),
+            egui::Align2::CENTER_CENTER,
+            id_text.to_uppercase(),
+            egui::FontId::monospace(6.0 * zoom),
+            egui::Color32::from_rgb(156, 163, 175),
+        );
+
+        // 4. Main Label
+        let display_name = focus.display_name();
+        let display_name = if display_name.len() > 14 { format!("{}...", &display_name[..11]) } else { display_name.to_string() };
+        painter.text(
+            rect.center() + egui::vec2(0.0, 4.0 * zoom),
+            egui::Align2::CENTER_CENTER,
+            display_name,
+            egui::FontId::proportional(10.0 * zoom),
+            egui::Color32::WHITE,
+        );
     }
-    
+
+    /// Helper to paint an octagon (clipped corners)
+    fn paint_octagon(&self, painter: &egui::Painter, rect: egui::Rect, fill: egui::Color32, stroke: egui::Stroke) {
+        let bevel = rect.width().min(rect.height()) * 0.15;
+        let points = vec![
+            egui::pos2(rect.min.x + bevel, rect.min.y),
+            egui::pos2(rect.max.x - bevel, rect.min.y),
+            egui::pos2(rect.max.x, rect.min.y + bevel),
+            egui::pos2(rect.max.x, rect.max.y - bevel),
+            egui::pos2(rect.max.x - bevel, rect.max.y),
+            egui::pos2(rect.min.x + bevel, rect.max.y),
+            egui::pos2(rect.min.x, rect.max.y - bevel),
+            egui::pos2(rect.min.x, rect.min.y + bevel),
+        ];
+        painter.add(egui::Shape::convex_polygon(points, fill, stroke));
+    }
+
+    /// Helper to paint only the top part of an octagon (for headers)
+    fn paint_octagon_top(&self, painter: &egui::Painter, rect: egui::Rect, fill: egui::Color32, stroke: egui::Stroke) {
+        let bevel = rect.width() * 0.15;
+        let points = vec![
+            egui::pos2(rect.min.x + bevel, rect.min.y),
+            egui::pos2(rect.max.x - bevel, rect.min.y),
+            egui::pos2(rect.max.x, rect.min.y + bevel),
+            egui::pos2(rect.max.x, rect.max.y),
+            egui::pos2(rect.min.x, rect.max.y),
+            egui::pos2(rect.min.x, rect.min.y + bevel),
+        ];
+        painter.add(egui::Shape::convex_polygon(points, fill, stroke));
+    }
 }
 
 
