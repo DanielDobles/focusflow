@@ -1,3 +1,4 @@
-/target
-*.bak
-debug_output.txt
+```
+# Backup files
+*.backup
+```
