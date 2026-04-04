@@ -85,29 +85,27 @@ pub struct FocusFlowApp {
 
 impl FocusFlowApp {
     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // Configure Vantary-inspired minimalist style
         let mut style = (*cc.egui_ctx.style()).clone();
-        style.spacing.item_spacing = egui::vec2(10.0, 6.0);
-        style.visuals.window_fill = egui::Color32::from_rgb(28, 32, 40);
-        style.visuals.panel_fill = egui::Color32::from_rgb(32, 37, 45);
-        style.visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(45, 50, 60);
-        style.visuals.extreme_bg_color = egui::Color32::from_rgb(20, 24, 30);
-        style.visuals.selection.bg_fill = egui::Color32::from_rgba_unmultiplied(16, 185, 129, 200);
-        style.visuals.selection.stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(16, 185, 129));
+        style.spacing.item_spacing = egui::vec2(10.0, 10.0);
+        style.visuals.window_fill = egui::Color32::from_rgba_unmultiplied(26, 28, 32, 230);
+        style.visuals.panel_fill = egui::Color32::from_rgb(17, 19, 23);
+        style.visuals.widgets.noninteractive.bg_fill = egui::Color32::from_rgb(30, 32, 36); 
+        style.visuals.extreme_bg_color = egui::Color32::from_rgb(12, 14, 18); 
+        style.visuals.selection.bg_fill = egui::Color32::from_rgba_unmultiplied(0, 227, 139, 60); 
+        style.visuals.selection.stroke = egui::Stroke::new(1.0, egui::Color32::from_rgb(0, 227, 139)); 
+        style.visuals.window_stroke = egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(134, 148, 138, 40));
         style.visuals.window_shadow = egui::epaint::Shadow {
-            offset: [(0.0) as i8, (4.0) as i8],
-            blur: 20.0 as u8,
+            offset: [(0.0) as i8, (8.0) as i8],
+            blur: 24.0 as u8,
             spread: 0.0 as u8,
-            color: egui::Color32::from_black_alpha(80),
+            color: egui::Color32::from_black_alpha(150),
         };
-        style.visuals.popup_shadow = egui::epaint::Shadow {
-            offset: [(0.0) as i8, (4.0) as i8],
-            blur: 16.0 as u8,
-            spread: 0.0 as u8,
-            color: egui::Color32::from_black_alpha(60),
-        };
+        style.visuals.popup_shadow = style.visuals.window_shadow.clone();
         cc.egui_ctx.set_style(style);
-        cc.egui_ctx.set_visuals(egui::Visuals::dark());
+        
+        let mut visuals = egui::Visuals::dark();
+        visuals.override_text_color = Some(egui::Color32::from_rgb(226, 226, 232));
+        cc.egui_ctx.set_visuals(visuals);
         
         Self {
             tree: None,
@@ -424,363 +422,195 @@ impl FocusFlowApp {
 
 impl eframe::App for FocusFlowApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Handle keyboard shortcuts
         self.handle_keyboard(ctx);
+
+        let primary = egui::Color32::from_rgb(0, 227, 139);
+        let secondary = egui::Color32::from_rgb(255, 207, 143);
+        let error = egui::Color32::from_rgb(255, 180, 171);
+        let surface_container_high = egui::Color32::from_rgba_unmultiplied(40, 42, 46, 240);
+        let surface = egui::Color32::from_rgb(17, 19, 23);
+        let on_surface = egui::Color32::from_rgb(226, 226, 232);
         
-        // Floating file actions (top-left)
-        if self.tree.is_none() || true {
-            egui::Window::new("")
-                .id(egui::Id::new("file_actions"))
-                .fixed_pos(egui::pos2(12.0, 12.0))
-                .auto_sized()
-                .resizable(false)
-                .frame(egui::Frame::window(&ctx.style())
-                    .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .corner_radius(egui::CornerRadius::same(12))
-                    .shadow(egui::epaint::Shadow {
-                        offset: [(0.0) as i8, (4.0) as i8],
-                        blur: 16.0 as u8,
-                        spread: 0.0 as u8,
-                        color: egui::Color32::from_black_alpha(60),
-                    }))
-                .title_bar(false)
-                .show(ctx, |ui| {
-                    ui.horizontal(|ui| {
-                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("📂"))
-                            .on_hover_text("Open file (Ctrl+O)").clicked() 
-                        {
-                            // Open file dialog
-                        }
-                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("💾"))
-                            .on_hover_text("Save (Ctrl+S)").clicked() 
-                        {
-                            self.save_file();
-                        }
-                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("🔄"))
-                            .on_hover_text("Reload (F5)").clicked() 
-                        {
-                            let path = self.file_path.clone();
-                            if let Some(path) = path {
-                                self.load_file(&path);
-                            }
-                        }
-                        ui.separator();
-                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("✨"))
-                            .on_hover_text("New focus").clicked() 
-                        {
-                            self.create_new_focus();
-                        }
-                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("✏️"))
-                            .on_hover_text("Edit selected (E)").clicked() 
-                        {
-                            self.open_editor();
-                        }
-                        if ui.add_sized(egui::vec2(36.0, 36.0), egui::Button::new("🗑️"))
-                            .on_hover_text("Delete (Del)").clicked() 
-                        {
-                            self.delete_selected_focus();
-                        }
-                    });
-                });
-        }
-        
-        // Mission status module (top-right)
-        if let Some(tree) = &self.tree {
-            let mut status_open = true;
-            egui::Window::new("")
-                .id(egui::Id::new("mission_status"))
-                .fixed_pos(egui::pos2(ctx.screen_rect().right() - 220.0, 12.0))
-                .fixed_size(egui::vec2(200.0, 80.0))
-                .resizable(false)
-                .movable(false)
-                .frame(egui::Frame::window(&ctx.style())
-                    .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .corner_radius(egui::CornerRadius::same(12))
-                    .shadow(egui::epaint::Shadow {
-                        offset: [(0.0) as i8, (4.0) as i8],
-                        blur: 16.0 as u8,
-                        spread: 0.0 as u8,
-                        color: egui::Color32::from_black_alpha(60),
-                    }))
-                .title_bar(false)
-                .open(&mut status_open)
-                .show(ctx, |ui| {
-                    ui.vertical_centered(|ui| {
-                        ui.label(egui::RichText::new("FocusFlow").size(16.0).color(egui::Color32::from_rgb(16, 185, 129)));
-                        ui.label(egui::RichText::new(&tree.id).size(11.0).color(egui::Color32::from_gray(180)));
+        egui::CentralPanel::default().frame(egui::Frame::NONE.fill(surface)).show(ctx, |ui| {
+            if self.view_mode == AppView::Canvas {
+                self.ui_canvas_view(ui);
+            } else {
+                egui::Window::new("Data Assets")
+                    .id(egui::Id::new("list_view_window"))
+                    .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+                    .default_size(egui::vec2(1000.0, 700.0))
+                    .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(1.0, egui::Color32::from_white_alpha(20))))
+                    .title_bar(false)
+                    .show(ctx, |ui| {
                         ui.horizontal(|ui| {
-                            ui.label(egui::RichText::new(format!("{} focuses", tree.focuses.len())).size(10.0).color(egui::Color32::from_gray(140)));
-                            if tree.modified {
-                                ui.label(egui::RichText::new("● Modified").size(10.0).color(egui::Color32::from_rgb(239, 68, 68)));
-                            } else {
-                                ui.label(egui::RichText::new("✓ Saved").size(10.0).color(egui::Color32::from_rgb(16, 185, 129)));
-                            }
+                            ui.allocate_ui(egui::vec2(350.0, ui.available_height()), |ui| { self.ui_left_panel(ui); });
+                            ui.add_space(8.0); // separator removed
+                            ui.allocate_ui(ui.available_size(), |ui| { self.ui_list_view(ui); });
                         });
                     });
+            }
+
+            egui::Window::new("Command Protocols")
+                .id(egui::Id::new("cmd_protocols"))
+                .fixed_pos(egui::pos2(120.0, 100.0))
+                .fixed_size(egui::vec2(280.0, 200.0))
+                .resizable(false).title_bar(false)
+                .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(2.0, primary)))
+                .show(ctx, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(egui::RichText::new("TERMINAL").color(primary).size(10.0));
+                        ui.label(egui::RichText::new("COMMAND PROTOCOLS").color(primary).size(12.0).strong());
+                    });
+                    ui.add_space(16.0);
+                    
+                    let btn_style = egui::vec2(ui.available_width(), 36.0);
+                    
+                    let b1 = egui::Button::new(egui::RichText::new("NEW MISSION").size(11.0).strong().color(on_surface)).fill(egui::Color32::from_rgb(30, 32, 36));
+                    if ui.add_sized(btn_style, b1).clicked() { self.create_new_focus(); }
+                    
+                    ui.add_space(4.0);
+                    
+                    let b2 = egui::Button::new(egui::RichText::new("ARCHIVE MAP (RELOAD)").size(11.0).strong().color(on_surface)).fill(egui::Color32::from_rgb(30, 32, 36));
+                    if ui.add_sized(btn_style, b2).clicked() {
+                        if let Some(path) = self.file_path.clone() { self.load_file(&path); }
+                    }
+                    
+                    ui.add_space(4.0);
+                    
+                    let b3 = egui::Button::new(egui::RichText::new("SYNC INTEL (SAVE)").size(11.0).strong().color(primary)).fill(egui::Color32::from_rgb(30, 32, 36));
+                    if ui.add_sized(btn_style, b3).clicked() { self.save_file(); }
                 });
-        }
-        
-        // Floating toolbar (bottom-center)
-        egui::Window::new("")
-            .id(egui::Id::new("toolbar"))
-            .fixed_pos(egui::pos2(ctx.screen_rect().center().x - 180.0, ctx.screen_rect().bottom() - 60.0))
-            .fixed_size(egui::vec2(360.0, 44.0))
-            .resizable(false)
-            .movable(false)
-            .frame(egui::Frame::window(&ctx.style())
-                .fill(egui::Color32::from_rgb(28, 32, 40))
-                .corner_radius(egui::CornerRadius::same(12))
-                .shadow(egui::epaint::Shadow {
-                    offset: [(0.0) as i8, (4.0) as i8],
-                    blur: 16.0 as u8,
-                    spread: 0.0 as u8,
-                    color: egui::Color32::from_black_alpha(60),
-                }))
-            .title_bar(false)
-            .show(ctx, |ui| {
-                ui.horizontal_centered(|ui| {
-                    if ui.add_sized(egui::vec2(70.0, 32.0), egui::Button::new("📋 List"))
-                        .on_hover_text("List view").clicked() 
-                    {
-                        self.view_mode = AppView::List;
-                    }
-                    if ui.add_sized(egui::vec2(70.0, 32.0), egui::Button::new("🌐 Canvas"))
-                        .on_hover_text("Canvas view").clicked() 
-                    {
-                        self.view_mode = AppView::Canvas;
-                    }
-                    ui.separator();
-                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("↩️"))
-                        .on_hover_text("Undo (Ctrl+Z)").clicked() 
-                    {
-                        self.undo();
-                    }
-                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("↪️"))
-                        .on_hover_text("Redo (Ctrl+Y)").clicked() 
-                    {
-                        self.redo();
-                    }
-                    ui.separator();
-                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("🔍"))
-                        .on_hover_text("Validate").clicked() 
-                    {
-                        self.run_validation();
-                    }
-                    if ui.add_sized(egui::vec2(36.0, 32.0), egui::Button::new("📊"))
-                        .on_hover_text("Diff preview").clicked() 
-                    {
-                        self.show_diff = !self.show_diff;
-                    }
-                });
-            });
-        
-        // Top menu bar (minimalist)
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            ui.add_space(4.0);
-            egui::menu::bar(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui.button("📂 Open File...").clicked() {
-                        // Focus on path input
-                    }
-                    if ui.button("💾 Save").clicked() {
+
+            if self.show_editor {
+                let mut editor_open = true;
+                egui::Window::new("Node Jurisdiction")
+                    .id(egui::Id::new("node_jurisdiction"))
+                    .fixed_pos(egui::pos2(ctx.screen_rect().right() - 400.0, 100.0))
+                    .fixed_size(egui::vec2(360.0, ctx.screen_rect().height() - 320.0))
+                    .resizable(false).title_bar(false)
+                    .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(1.0, egui::Color32::from_white_alpha(30))))
+                    .open(&mut editor_open)
+                    .show(ctx, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.vertical(|ui| {
+                                ui.label(egui::RichText::new("NODE JURISDICTION").color(secondary).size(12.0).strong());
+                                if let Some(f) = &self.editing_focus {
+                                    ui.label(egui::RichText::new(format!("ID: {}", f.id)).color(egui::Color32::from_white_alpha(100)).size(10.0));
+                                }
+                            });
+                        });
+                        ui.add_space(16.0);
+                        self.ui_editor_panel(ui);
+                    });
+                self.show_editor = editor_open;
+            }
+
+            // Operational Readiness
+            egui::Window::new("Operational Readiness")
+                .id(egui::Id::new("op_readiness"))
+                .fixed_pos(egui::pos2(ctx.screen_rect().right() - 400.0, ctx.screen_rect().bottom() - 180.0))
+                .fixed_size(egui::vec2(360.0, 150.0))
+                .resizable(false).title_bar(false)
+                .frame(egui::Frame::window(&ctx.style()).fill(surface_container_high).stroke(egui::Stroke::new(2.0, secondary)))
+                .show(ctx, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(egui::RichText::new("OPERATIONAL READINESS").color(on_surface).size(12.0).strong());
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.label(egui::RichText::new(if self.validation.as_ref().map_or(false, |v| v.is_ok()) { "94%" } else { "42%" }).color(secondary).size(24.0).strong());
+                        });
+                    });
+                    ui.add_space(8.0);
+                    let text = if let Some(val) = &self.validation {
+                        format!("System parameters verified. {} conflicts detected.", val.total_issues())
+                    } else {
+                        "Run validation to verify system parameters.".to_string()
+                    };
+                    ui.label(egui::RichText::new(text).color(egui::Color32::from_white_alpha(150)).size(10.0));
+                    ui.add_space(12.0);
+                    if ui.add_sized(egui::vec2(ui.available_width(), 36.0), egui::Button::new(egui::RichText::new("COMMIT SELECTION").color(egui::Color32::BLACK).strong()).fill(secondary)).clicked() {
                         self.save_file();
-                        ui.close_menu();
-                    }
-                    if ui.button("💾 Save As...").clicked() {
-                        self.show_save_dialog = true;
-                        ui.close_menu();
-                    }
-                    ui.separator();
-                    if ui.button("🔄 Reload").clicked() {
-                        let path = self.file_path.clone();
-                        if let Some(path) = path {
-                            self.load_file(&path);
-                        }
-                        ui.close_menu();
-                    }
-                    ui.separator();
-                    if ui.button("Exit").clicked() {
-                        std::process::exit(0);
                     }
                 });
-                
-                ui.menu_button("Edit", |ui| {
-                    if ui.button("✨ New Focus").clicked() {
-                        self.create_new_focus();
-                        ui.close_menu();
-                    }
-                    if ui.button("✏️ Edit Selected (E)").clicked() {
-                        self.open_editor();
-                        ui.close_menu();
-                    }
-                    if ui.button("📋 Duplicate (Ctrl+D)").clicked() {
-                        self.duplicate_selected_focus();
-                        ui.close_menu();
-                    }
-                    if ui.button("🗑️ Delete (Del)").clicked() {
-                        self.delete_selected_focus();
-                        ui.close_menu();
-                    }
-                    ui.separator();
-                    if ui.button("↩️ Undo (Ctrl+Z)").clicked() {
-                        self.undo();
-                        ui.close_menu();
-                    }
-                    if ui.button("↩️ Redo (Ctrl+Y)").clicked() {
-                        self.redo();
-                        ui.close_menu();
-                    }
-                    ui.separator();
-                    if ui.button("🔍 Run Validation").clicked() {
-                        self.run_validation();
-                        ui.close_menu();
-                    }
-                });
-                
-                ui.menu_button("View", |ui| {
-                    if ui.selectable_label(self.view_mode == AppView::List, "📋 List View").clicked() {
-                        self.view_mode = AppView::List;
-                        ui.close_menu();
-                    }
-                    if ui.selectable_label(self.view_mode == AppView::Canvas, "🌐 Canvas View").clicked() {
-                        self.view_mode = AppView::Canvas;
-                        ui.close_menu();
-                    }
-                    ui.separator();
-                    if ui.checkbox(&mut self.show_editor, "Editor Panel").clicked() {
-                        if !self.show_editor {
-                            self.show_editor = false;
-                        }
-                    }
-                    if ui.checkbox(&mut self.show_validation, "Validation Panel").clicked() {
-                        if !self.show_validation {
-                            self.validation = None;
-                        }
-                    }
-                    ui.separator();
-                    if ui.button("📊 Diff Preview").clicked() {
-                        self.show_diff = !self.show_diff;
-                        ui.close_menu();
-                    }
-                });
-                
-                ui.menu_button("Help", |ui| {
-                    if ui.button("⌨️ Keyboard Shortcuts").clicked() {
-                        self.status_message = "Ctrl+S: Save | Ctrl+Z: Undo | Ctrl+Y: Redo | E: Edit | Del: Delete | Ctrl+D: Duplicate | F5: Reload".to_string();
-                        ui.close_menu();
-                    }
-                });
-            });
-            ui.add_space(2.0);
-        });
-        
-        // Status bar at bottom
-        egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            ui.separator();
-            ui.label(&self.status_message);
-        });
-        
-        // Left panel
-        egui::SidePanel::left("left_panel")
-            .resizable(true)
-            .default_width(300.0)
-            .show(ctx, |ui| {
-                self.ui_left_panel(ui);
-            });
-        
-        // Center panel depends on view mode
-        egui::CentralPanel::default().show(ctx, |ui| {
-            match self.view_mode {
-                AppView::List => self.ui_list_view(ui),
-                AppView::Canvas => self.ui_canvas_view(ui),
+
+            if self.show_validation {
+                let mut v_open = true;
+                egui::Window::new("Urgent Intel")
+                    .id(egui::Id::new("urgent_intel"))
+                    .fixed_pos(egui::pos2(ctx.screen_rect().right() - 780.0, ctx.screen_rect().bottom() - 280.0))
+                    .fixed_size(egui::vec2(340.0, 250.0))
+                    .resizable(false).title_bar(false)
+                    .frame(egui::Frame::window(&ctx.style()).fill(egui::Color32::from_rgba_unmultiplied(147, 0, 10, 50)).stroke(egui::Stroke::new(1.0, error)))
+                    .open(&mut v_open)
+                    .show(ctx, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("WARNING").color(error).size(10.0));
+                            ui.label(egui::RichText::new("URGENT INTEL").color(error).size(12.0).strong());
+                        });
+                        ui.add_space(12.0);
+                        self.ui_validation_panel(ui);
+                    });
+                self.show_validation = v_open;
             }
         });
-        
-        // Floating editor panel (right side)
-        if self.show_editor {
-            let mut editor_open = true;
-            egui::Window::new("✏️ Editor de Foco")
-                .id(egui::Id::new("editor_panel"))
-                .fixed_pos(egui::pos2(ctx.screen_rect().right() - 440.0, 100.0))
-                .fixed_size(egui::vec2(420.0, ctx.screen_rect().height() - 180.0))
-                .resizable(false)
-                .frame(egui::Frame::window(&ctx.style())
-                    .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .corner_radius(egui::CornerRadius::same(12))
-                    .shadow(egui::epaint::Shadow {
-                        offset: [(0.0) as i8, (4.0) as i8],
-                        blur: 16.0 as u8,
-                        spread: 0.0 as u8,
-                        color: egui::Color32::from_black_alpha(60),
-                    }))
-                .open(&mut editor_open)
-                .show(ctx, |ui| {
-                    self.ui_editor_panel(ui);
+
+        // Top Navigation Header
+        egui::TopBottomPanel::top("top_nav_header")
+            .frame(egui::Frame::NONE.fill(egui::Color32::from_rgba_unmultiplied(17, 19, 23, 220)).inner_margin(egui::Margin::symmetric(24, 16)))
+            .show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("FocusFlow").color(primary).size(20.0).strong());
+                    
+                    let sep_rect = egui::Rect::from_min_size(ui.cursor().min + egui::vec2(16.0, 4.0), egui::vec2(1.0, 20.0));
+                    ui.painter().rect_filled(sep_rect, 0.0, egui::Color32::from_rgba_unmultiplied(134, 148, 138, 76));
+                    ui.add_space(32.0);
+
+                    if ui.selectable_label(self.view_mode == AppView::Canvas, egui::RichText::new("NODES").size(12.0).strong()).clicked() { self.view_mode = AppView::Canvas; }
+                    if ui.selectable_label(self.view_mode == AppView::List, egui::RichText::new("ASSETS").size(12.0).strong()).clicked() { self.view_mode = AppView::List; }
+                    if ui.selectable_label(self.show_diff, egui::RichText::new("INTEL").size(12.0).strong()).clicked() { self.show_diff = !self.show_diff; }
+
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let deploy_btn = ui.add(egui::Button::new(
+                            egui::RichText::new("DEPLOY OPERATIONS").color(egui::Color32::from_rgb(0, 66, 37)).size(12.0).strong()
+                        ).fill(egui::Color32::from_rgb(0, 186, 113)));
+                        if deploy_btn.clicked() { self.save_file(); }
+
+                        ui.add_space(16.0);
+
+                        let read_btn = ui.add(egui::Button::new(
+                            egui::RichText::new("OPERATIONAL READINESS").color(egui::Color32::from_rgb(226, 226, 232)).size(12.0).strong()
+                        ).fill(egui::Color32::from_rgb(40, 42, 46)).stroke(egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(134, 148, 138, 50))));
+                        if read_btn.clicked() { self.run_validation(); }
+                    });
                 });
-            self.show_editor = editor_open;
-        }
-        
-        // Floating validation panel (bottom-right)
-        if self.show_validation {
-            let mut validation_open = true;
-            egui::Window::new("🔍 Validación")
-                .id(egui::Id::new("validation_panel"))
-                .fixed_pos(egui::pos2(ctx.screen_rect().right() - 380.0, ctx.screen_rect().bottom() - 280.0))
-                .fixed_size(egui::vec2(360.0, 260.0))
-                .resizable(false)
-                .frame(egui::Frame::window(&ctx.style())
-                    .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .corner_radius(egui::CornerRadius::same(12))
-                    .shadow(egui::epaint::Shadow {
-                        offset: [(0.0) as i8, (4.0) as i8],
-                        blur: 16.0 as u8,
-                        spread: 0.0 as u8,
-                        color: egui::Color32::from_black_alpha(60),
-                    }))
-                .open(&mut validation_open)
-                .show(ctx, |ui| {
-                    self.ui_validation_panel(ui);
+            });
+
+        // Left Navigation Sidebar
+        egui::SidePanel::left("left_nav_sidebar")
+            .frame(egui::Frame::NONE.fill(egui::Color32::from_rgba_unmultiplied(17, 19, 23, 240)).inner_margin(egui::Margin::symmetric(0, 40)))
+            .exact_width(64.0).resizable(false)
+            .show(ctx, |ui| {
+                ui.vertical_centered(|ui| {
+                    if ui.add_sized(egui::vec2(48.0, 48.0), egui::SelectableLabel::new(self.view_mode == AppView::Canvas, "🌐
+NAV")).on_hover_text("Terminal").clicked() { self.view_mode = AppView::Canvas; }
+                    ui.add_space(16.0);
+                    if ui.add_sized(egui::vec2(48.0, 48.0), egui::SelectableLabel::new(self.show_editor, "✏️
+EDIT")).on_hover_text("Editor").clicked() { self.show_editor = !self.show_editor; }
+                    ui.add_space(16.0);
+                    if ui.add_sized(egui::vec2(48.0, 48.0), egui::SelectableLabel::new(self.show_validation, "⚠️
+VAL")).on_hover_text("Validation").clicked() { self.show_validation = !self.show_validation; }
                 });
-            self.show_validation = validation_open;
-        }
-        
-        // Diff preview window (floating)
-        if self.show_diff {
-            let diff_text = if let (Some(old), Some(new)) = (&self.original_tree, &self.tree) {
-                writer::generate_diff(old, new)
-            } else {
-                "No original version to compare".to_string()
-            };
-            
-            let mut diff_open = true;
-            egui::Window::new("📊 Diff Preview")
-                .id(egui::Id::new("diff_preview"))
-                .fixed_pos(egui::pos2(ctx.screen_rect().center().x - 300.0, ctx.screen_rect().center().y - 200.0))
-                .fixed_size(egui::vec2(600.0, 400.0))
-                .resizable(false)
-                .frame(egui::Frame::window(&ctx.style())
-                    .fill(egui::Color32::from_rgb(28, 32, 40))
-                    .corner_radius(egui::CornerRadius::same(12))
-                    .shadow(egui::epaint::Shadow {
-                        offset: [(0.0) as i8, (4.0) as i8],
-                        blur: 16.0 as u8,
-                        spread: 0.0 as u8,
-                        color: egui::Color32::from_black_alpha(60),
-                    }))
-                .open(&mut diff_open)
-                .show(ctx, |ui| {
-                    ui.add(egui::TextEdit::multiline(&mut diff_text.clone()).code_editor().desired_width(f32::INFINITY));
-                });
-            self.show_diff = diff_open;
-        }
+            });
     }
 }
 
 impl FocusFlowApp {
-    /// Left panel: file load, search, focus list
+    // Left panel: file load, search, focus list
+}
+
+impl FocusFlowApp {
     fn ui_left_panel(&mut self, ui: &mut egui::Ui) {
         ui.heading("FocusFlow");
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         // File path input
         ui.horizontal(|ui| {
@@ -821,7 +651,7 @@ impl FocusFlowApp {
             }
         }
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         if self.tree.is_none() {
             ui.label("No focus tree loaded");
@@ -853,7 +683,7 @@ impl FocusFlowApp {
             });
         }
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         // Search box
         ui.horizontal(|ui| {
@@ -873,7 +703,7 @@ impl FocusFlowApp {
                 }
             });
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         // Focus list
         let filtered = self.filtered_focuses();
@@ -918,7 +748,7 @@ impl FocusFlowApp {
         if self.tree.is_none() {
             ui.centered_and_justified(|ui| {
                 ui.vertical_centered(|ui| {
-                    ui.heading("🪟 FocusFlow");
+                    // ui.heading removed
                     ui.label("HOI4 Focus Tree Editor for Millennium Dawn");
                     ui.label("");
                     ui.label("Load a focus tree to get started");
@@ -931,7 +761,7 @@ impl FocusFlowApp {
             if let Some(tree) = &self.tree {
                 if let Some(focus) = tree.focuses.get(idx) {
                     ui.heading(format!("{} {}", focus.category_icon(), focus.id));
-                    ui.separator();
+                    ui.add_space(8.0); // separator removed
                     
                     // Info grid
                     egui::Grid::new("focus_info").striped(true).show(ui, |ui| {
@@ -984,7 +814,7 @@ impl FocusFlowApp {
                         }
                     });
                     
-                    ui.separator();
+                    ui.add_space(8.0); // separator removed
                     
                     // Preview of completion_reward
                     if let Some(ref reward) = focus.completion_reward_raw {
@@ -1016,7 +846,7 @@ impl FocusFlowApp {
                         });
                     }
                     
-                    ui.separator();
+                    ui.add_space(8.0); // separator removed
                     
                     // Action buttons
                     ui.horizontal(|ui| {
@@ -1057,7 +887,7 @@ impl FocusFlowApp {
                 // Zoom changed
             }
             ui.label(format!("{:.0}%", self.canvas_zoom * 100.0));
-            ui.separator();
+            ui.add_space(8.0); // separator removed
             if ui.small_button("Reset View").clicked() {
                 self.canvas_zoom = 1.0;
                 self.canvas_pan = egui::Vec2::ZERO;
@@ -1069,7 +899,7 @@ impl FocusFlowApp {
             }
         });
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         // Draw the canvas
         let (response, painter) = ui.allocate_painter(
@@ -1123,10 +953,18 @@ impl FocusFlowApp {
                     let (px, py) = prereq.pixel_position(&tree, grid_w, grid_h);
                     let prereq_pos = egui::pos2(px + offset.x, py + offset.y);
                     
-                    painter.line_segment(
-                        [prereq_pos, screen_pos],
-                        egui::Stroke::new(2.0, egui::Color32::from_rgb(100, 150, 255)),
-                    );
+                    // Tactical dotted line
+                    let steps = 15;
+                    for i in 0..steps {
+                        if i % 2 == 0 {
+                            let t1 = i as f32 / steps as f32;
+                            let t2 = (i + 1) as f32 / steps as f32;
+                            painter.line_segment(
+                                [screen_pos.lerp(prereq_pos, t1), screen_pos.lerp(prereq_pos, t2)],
+                                egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 227, 139)), // primary color dashed
+                            );
+                        }
+                    }
                     
                     // Arrow head
                     let dir = (screen_pos - prereq_pos).normalized();
@@ -1135,11 +973,11 @@ impl FocusFlowApp {
                     let perp = egui::vec2(-dir.y, dir.x) * arrow_size;
                     painter.line_segment(
                         [tip, tip - dir * arrow_size + perp],
-                        egui::Stroke::new(2.0, egui::Color32::from_rgb(100, 150, 255)),
+                        egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 227, 139)),
                     );
                     painter.line_segment(
                         [tip, tip - dir * arrow_size - perp],
-                        egui::Stroke::new(2.0, egui::Color32::from_rgb(100, 150, 255)),
+                        egui::Stroke::new(2.0, egui::Color32::from_rgb(0, 227, 139)),
                     );
                 }
             }
@@ -1160,7 +998,7 @@ impl FocusFlowApp {
                             let p2 = screen_pos.lerp(me_pos, t2);
                             painter.line_segment(
                                 [p1, p2],
-                                egui::Stroke::new(1.5, egui::Color32::from_rgb(255, 80, 80)),
+                                egui::Stroke::new(1.5, egui::Color32::from_rgb(255, 180, 171)), // error dashed
                             );
                         }
                     }
@@ -1181,20 +1019,21 @@ impl FocusFlowApp {
                 tree.focuses.get(idx).map_or(false, |f| f.id == focus.id)
             );
             
-            let color = egui::Color32::from_rgb(
+            let _color = egui::Color32::from_rgb(
                 (focus.category_color()[0] * 255.0) as u8,
                 (focus.category_color()[1] * 255.0) as u8,
                 (focus.category_color()[2] * 255.0) as u8,
             );
             
-            let fill_color = if selected {
-                color.linear_multiply(1.5)
-            } else {
-                color.linear_multiply(0.6)
-            };
+            let fill_color = egui::Color32::from_rgb(30, 32, 36);
+            let stroke_color = if selected { egui::Color32::from_rgb(0, 227, 139) } else { egui::Color32::from_rgb(134, 148, 138) };
             
-            painter.rect_filled(node_rect, 4.0, fill_color);
-            painter.rect_stroke(node_rect, 4.0, egui::Stroke::new(1.5, egui::Color32::WHITE), egui::StrokeKind::Inside);
+            if selected {
+                painter.circle_filled(node_rect.center(), node_rect.width() * 0.6, egui::Color32::from_rgba_unmultiplied(0, 227, 139, 30));
+            }
+            
+            painter.rect_filled(node_rect, 6.0, fill_color);
+            painter.rect_stroke(node_rect, 6.0, egui::Stroke::new(1.5, stroke_color), egui::StrokeKind::Inside);
             
             // Label
             let label = focus.display_name();
@@ -1214,9 +1053,9 @@ impl FocusFlowApp {
     
     /// Editor panel
     fn ui_editor_panel(&mut self, ui: &mut egui::Ui) {
-        let creating_new = self.creating_new;
-        ui.heading(if creating_new { "✨ New Focus" } else { "✏️ Edit Focus" });
-        ui.separator();
+        let _creating_new = self.creating_new;
+        // edit heading removed
+        ui.add_space(8.0); // separator removed
         
         if self.editing_focus.is_none() {
             ui.label("No focus being edited");
@@ -1275,7 +1114,7 @@ impl FocusFlowApp {
         ui.add(egui::DragValue::new(&mut cost_val).range(0.1..=100.0).speed(0.1));
         edited.cost = Some(cost_val);
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         ui.label("Prerequisites (comma-separated IDs):");
         let mut prereq_str = edited.prerequisites.join(", ");
@@ -1287,7 +1126,7 @@ impl FocusFlowApp {
         ui.text_edit_singleline(&mut me_str);
         edited.mutually_exclusive = me_str.split(',').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect();
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         ui.label("Search Filters:");
         let mut sf_str = edited.search_filters.join(", ");
@@ -1296,7 +1135,7 @@ impl FocusFlowApp {
         
         ui.checkbox(&mut edited.bypass_if_unavailable, "Bypass if unavailable");
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         ui.label("Completion Reward (Paradox script):");
         let mut reward_str = edited.completion_reward_raw.clone().unwrap_or_else(|| "{\n}".to_string());
@@ -1308,7 +1147,7 @@ impl FocusFlowApp {
         ui.add(egui::TextEdit::multiline(&mut ai_str).code_editor().desired_rows(4).desired_width(f32::INFINITY));
         edited.ai_will_do_raw = Some(ai_str);
         
-        ui.separator();
+        ui.add_space(8.0); // separator removed
         
         ui.horizontal(|ui| {
             if ui.button("💾 Save").clicked() {
@@ -1322,12 +1161,12 @@ impl FocusFlowApp {
     
     /// Validation panel (floating, with crimson accents for errors)
     fn ui_validation_panel(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Validación");
-        ui.separator();
+        // validation heading removed
+        ui.add_space(8.0); // separator removed
         
         if let Some(result) = &self.validation {
             ui.label(format!("{} errores, {} advertencias", result.errors.len(), result.warnings.len()));
-            ui.separator();
+            ui.add_space(8.0); // separator removed
             
             if !result.errors.is_empty() {
                 ui.label(egui::RichText::new("Errores:").color(egui::Color32::from_rgb(220, 38, 38)));

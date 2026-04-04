@@ -1,0 +1,203 @@
+    Checking focusflow v0.1.0 (C:\Users\armon\DEV\HOI4_MD_FT\focusflow)
+error[E0407]: method `ui_left_panel` is not a member of trait `eframe::App`
+   --> src\app.rs:604:5
+    |
+604 | /     fn ui_left_panel(&mut self, ui: &mut egui::Ui) {
+605 | |         ui.heading("FocusFlow");
+606 | |         ui.add_space(8.0); // separator removed
+...   |
+736 | |         });
+737 | |     }
+    | |_____^ not a member of trait `eframe::App`
+
+error[E0407]: method `ui_list_view` is not a member of trait `eframe::App`
+   --> src\app.rs:740:5
+    |
+740 | /     fn ui_list_view(&mut self, ui: &mut egui::Ui) {
+741 | |         if self.tree.is_none() {
+742 | |             ui.centered_and_justified(|ui| {
+743 | |                 ui.vertical_centered(|ui| {
+...   |
+863 | |     }
+    | |_____^ not a member of trait `eframe::App`
+
+error[E0407]: method `ui_canvas_view` is not a member of trait `eframe::App`
+    --> src\app.rs:866:5
+     |
+ 866 | /     fn ui_canvas_view(&mut self, ui: &mut egui::Ui) {
+ 867 | |         if self.tree.is_none() {
+ 868 | |             ui.centered_and_justified(|ui| {
+ 869 | |                 ui.label("Load a focus tree to view the canvas");
+...    |
+1044 | |         ui.label("≡ƒû▒∩╕Å Right-click drag to pan | Scroll to zoom | Click node to select");
+1045 | |     }
+     | |_____^ not a member of trait `eframe::App`
+
+error[E0407]: method `ui_editor_panel` is not a member of trait `eframe::App`
+    --> src\app.rs:1048:5
+     |
+1048 | /     fn ui_editor_panel(&mut self, ui: &mut egui::Ui) {
+1049 | |         let creating_new = self.creating_new;
+1050 | |         // edit heading removed
+1051 | |         ui.add_space(8.0); // separator removed
+...    |
+1075 | |     }
+     | |_____^ not a member of trait `eframe::App`
+
+error[E0407]: method `render_focus_editor` is not a member of trait `eframe::App`
+    --> src\app.rs:1078:5
+     |
+1078 | /     fn render_focus_editor(
+1079 | |         ui: &mut egui::Ui,
+1080 | |         edited: &mut FocusNode,
+1081 | |         should_save: &mut bool,
+...    |
+1152 | |         });
+1153 | |     }
+     | |_____^ not a member of trait `eframe::App`
+
+error[E0407]: method `ui_validation_panel` is not a member of trait `eframe::App`
+    --> src\app.rs:1156:5
+     |
+1156 | /     fn ui_validation_panel(&mut self, ui: &mut egui::Ui) {
+1157 | |         // validation heading removed
+1158 | |         ui.add_space(8.0); // separator removed
+...    |
+1191 | |     }
+     | |_____^ not a member of trait `eframe::App`
+
+warning: use of deprecated associated function `egui::Frame::none`: Use `Frame::NONE` or `Frame::new()` instead.
+   --> src\app.rs:434:58
+    |
+434 |         egui::CentralPanel::default().frame(egui::Frame::none().fill(surface)).show(ctx, |ui| {
+    |                                                          ^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+error[E0599]: no method named `ui_canvas_view` found for mutable reference `&mut FocusFlowApp` in the current scope
+   --> src\app.rs:436:22
+    |
+436 |                 self.ui_canvas_view(ui);
+    |                      ^^^^^^^^^^^^^^ method not found in `&mut FocusFlowApp`
+
+error[E0599]: no method named `ui_left_panel` found for mutable reference `&mut FocusFlowApp` in the current scope
+   --> src\app.rs:446:98
+    |
+446 | ...                   ui.allocate_ui(egui::vec2(350.0, ui.available_height()), |ui| { self.ui_left_panel(ui); });
+    |                                                                                            ^^^^^^^^^^^^^ method not found in `&mut FocusFlowApp`
+
+error[E0599]: no method named `ui_list_view` found for mutable reference `&mut FocusFlowApp` in the current scope
+   --> src\app.rs:448:77
+    |
+448 | ...                   ui.allocate_ui(ui.available_size(), |ui| { self.ui_list_view(ui); });
+    |                                                                       ^^^^^^^^^^^^ method not found in `&mut FocusFlowApp`
+
+error[E0599]: no method named `tracking` found for struct `egui::RichText` in the current scope
+   --> src\app.rs:462:110
+    |
+462 |                         ui.label(egui::RichText::new("COMMAND PROTOCOLS").color(primary).size(12.0).strong().tracking(1.5));
+    |                                                                                                              ^^^^^^^^ method not found in `egui::RichText`
+
+error[E0599]: no method named `tracking` found for struct `egui::RichText` in the current scope
+   --> src\app.rs:494:120
+    |
+494 | ...                   ui.label(egui::RichText::new("NODE JURISDICTION").color(secondary).size(12.0).strong().tracking(1.5));
+    |                                                                                                              ^^^^^^^^ method not found in `egui::RichText`
+
+error[E0599]: no method named `ui_editor_panel` found for mutable reference `&mut FocusFlowApp` in the current scope
+   --> src\app.rs:501:30
+    |
+501 |                         self.ui_editor_panel(ui);
+    |                              ^^^^^^^^^^^^^^^ method not found in `&mut FocusFlowApp`
+
+error[E0599]: no method named `tracking` found for struct `egui::RichText` in the current scope
+   --> src\app.rs:515:117
+    |
+515 |                         ui.label(egui::RichText::new("OPERATIONAL READINESS").color(on_surface).size(12.0).strong().tracking(1.5));
+    |                                                                                                                     ^^^^^^^^ method not found in `egui::RichText`
+
+error[E0599]: no method named `tracking` found for struct `egui::RichText` in the current scope
+   --> src\app.rs:545:107
+    |
+545 | ...                   ui.label(egui::RichText::new("URGENT INTEL").color(error).size(12.0).strong().tracking(1.5));
+    |                                                                                                     ^^^^^^^^ method not found in `egui::RichText`
+
+error[E0599]: no method named `ui_validation_panel` found for mutable reference `&mut FocusFlowApp` in the current scope
+   --> src\app.rs:548:30
+    |
+548 |                         self.ui_validation_panel(ui);
+    |                              ^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `run_validation` with a similar name, but with different arguments
+   --> src\app.rs:228:5
+    |
+228 |     pub fn run_validation(&mut self) {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: use of deprecated associated function `egui::Frame::none`: Use `Frame::NONE` or `Frame::new()` instead.
+   --> src\app.rs:556:33
+    |
+556 | ...   .frame(egui::Frame::none().fill(egui::Color32::from_rgba_unmultiplied(17, 19, 23, 220)).inner_margin(egui::Margin::symmetric(...
+    |                           ^^^^
+
+error[E0308]: arguments to this function are incorrect
+   --> src\app.rs:556:114
+    |
+556 | ..., 23, 220)).inner_margin(egui::Margin::symmetric(24.0, 16.0)))
+    |                             ^^^^^^^^^^^^^^^^^^^^^^^ ----  ---- expected `i8`, found floating-point number
+    |                                                     |
+    |                                                     expected `i8`, found floating-point number
+    |
+note: associated function defined here
+   --> C:\Users\armon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\epaint-0.31.1\src\margin.rs:44:18
+    |
+ 44 |     pub const fn symmetric(x: i8, y: i8) -> Self {
+    |                  ^^^^^^^^^
+
+warning: use of deprecated associated function `egui::Frame::none`: Use `Frame::NONE` or `Frame::new()` instead.
+   --> src\app.rs:587:33
+    |
+587 | ...   .frame(egui::Frame::none().fill(egui::Color32::from_rgba_unmultiplied(17, 19, 23, 240)).inner_margin(egui::Margin::symmetric(...
+    |                           ^^^^
+
+error[E0308]: arguments to this function are incorrect
+   --> src\app.rs:587:114
+    |
+587 | ...9, 23, 240)).inner_margin(egui::Margin::symmetric(0.0, 40.0)))
+    |                              ^^^^^^^^^^^^^^^^^^^^^^^ ---  ---- expected `i8`, found floating-point number
+    |                                                      |
+    |                                                      expected `i8`, found floating-point number
+    |
+note: associated function defined here
+   --> C:\Users\armon\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\epaint-0.31.1\src\margin.rs:44:18
+    |
+ 44 |     pub const fn symmetric(x: i8, y: i8) -> Self {
+    |                  ^^^^^^^^^
+
+error[E0599]: no function or associated item named `render_focus_editor` found for struct `FocusFlowApp` in the current scope
+    --> src\app.rs:1063:19
+     |
+  20 | pub struct FocusFlowApp {
+     | ----------------------- function or associated item `render_focus_editor` not found for this struct
+...
+1063 |             Self::render_focus_editor(ui, &mut edited, &mut should_save, &mut should_cancel);
+     |                   ^^^^^^^^^^^^^^^^^^^ function or associated item not found in `FocusFlowApp`
+     |
+note: if you're trying to build a new `FocusFlowApp`, consider using `FocusFlowApp::new` which returns `FocusFlowApp`
+    --> src\app.rs:87:5
+     |
+  87 |     pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `color`
+    --> src\app.rs:1015:17
+     |
+1015 |             let color = egui::Color32::from_rgb(
+     |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_color`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0308, E0407, E0599.
+For more information about an error, try `rustc --explain E0308`.
+warning: `focusflow` (bin "focusflow") generated 4 warnings
+error: could not compile `focusflow` (bin "focusflow") due to 18 previous errors; 4 warnings emitted

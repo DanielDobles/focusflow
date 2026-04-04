@@ -1,0 +1,55 @@
+    Checking focusflow v0.1.0 (C:\Users\armon\DEV\HOI4_MD_FT\focusflow)
+error[E0584]: found a documentation comment that doesn't document anything
+   --> src\app.rs:605:5
+    |
+605 |     /// Left panel: file load, search, focus list
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this doc comment doesn't document anything
+    |
+    = help: doc comments must come before what they document, if a comment was intended use `//`
+
+error[E0501]: cannot borrow `*ui` as mutable because previous closure requires unique access
+   --> src\app.rs:474:21
+    |
+467 |                     let mut draw_btn = |text: &str, accent: bool| {
+    |                                        -------------------------- closure construction occurs here
+...
+470 |                         ui.add_sized(btn_style, b)
+    |                         -- first borrow occurs due to use of `*ui` in closure
+...
+474 |                     ui.add_space(4.0);
+    |                     ^^ second borrow occurs here
+475 |                     if draw_btn("ARCHIVE MAP (RELOAD)", false).clicked() {
+    |                        -------- first borrow later used here
+
+error[E0501]: cannot borrow `*ui` as mutable because previous closure requires unique access
+   --> src\app.rs:478:21
+    |
+467 |                     let mut draw_btn = |text: &str, accent: bool| {
+    |                                        -------------------------- closure construction occurs here
+...
+470 |                         ui.add_sized(btn_style, b)
+    |                         -- first borrow occurs due to use of `*ui` in closure
+...
+478 |                     ui.add_space(4.0);
+    |                     ^^ second borrow occurs here
+479 |                     if draw_btn("SYNC INTEL (SAVE)", true).clicked() { self.save_file(); }
+    |                        -------- first borrow later used here
+
+warning: unused variable: `color`
+    --> src\app.rs:1020:17
+     |
+1020 |             let color = egui::Color32::from_rgb(
+     |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_color`
+     |
+     = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `creating_new`
+    --> src\app.rs:1054:13
+     |
+1054 |         let creating_new = self.creating_new;
+     |             ^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_creating_new`
+
+Some errors have detailed explanations: E0501, E0584.
+For more information about an error, try `rustc --explain E0501`.
+warning: `focusflow` (bin "focusflow") generated 2 warnings
+error: could not compile `focusflow` (bin "focusflow") due to 3 previous errors; 2 warnings emitted
