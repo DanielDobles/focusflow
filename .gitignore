@@ -1,4 +1,41 @@
-```
-# Backup files
+# FocusFlow: Palantir Command .gitignore
+
+# --- Rust / Cargo ---
+/target
+Cargo.lock
+# (Optional) Comment out Cargo.lock if you want to commit it for binary stability
+# !Cargo.lock
+
+# --- VS Code / IDE ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# --- Windows System ---
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# --- Python Tools (Fix/Update scripts) ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# --- Logs & Temporary ---
+*.log
+error.log
+error2.log
+debug_output.txt
+*.bak
 *.backup
-```
+*.tmp
+*.temp
+
+# --- Local Snapshots & Backups ---
+/backups/
+/temp_builds/
+/dist/

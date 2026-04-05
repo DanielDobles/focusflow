@@ -77,6 +77,9 @@ pub struct FocusFlowApp {
     
     /// Show diff preview
     pub show_diff: bool,
+
+    /// Diff content for Intel & Logs
+    pub diff_content: String,
     
     /// Undo history
     pub undo_stack: Vec<String>,
@@ -142,6 +145,7 @@ impl FocusFlowApp {
             file_path_input: String::new(),
             show_save_dialog: false,
             show_diff: false,
+            diff_content: String::new(),
             undo_stack: Vec::new(),
             redo_stack: Vec::new(),
         }
@@ -206,6 +210,7 @@ impl FocusFlowApp {
                         self.undo_stack.clear();
                         self.redo_stack.clear();
                         self.show_diff = false;
+                        self.diff_content.clear();
                     }
                     Err(e) => {
                         self.status_message = format!("❌ Parse error: {}", e);
@@ -224,7 +229,7 @@ impl FocusFlowApp {
             // Create backup
             let backup_path = path.with_extension("txt.bak");
             let _ = std::fs::copy(path, &backup_path);
-            
+
             let output = writer::write_focus_tree(tree);
             match std::fs::write(path, output.as_bytes()) {
                 Ok(_) => {
@@ -235,6 +240,45 @@ impl FocusFlowApp {
                 Err(e) => {
                     self.status_message = format!("❌ Save error: {}", e);
                 }
+            }
+        }
+    }
+
+    /// Deploy: save file and push to git
+    pub fn deploy_operations(&mut self) {
+        self.save_file();
+
+        // Try to git commit and push from the focusflow directory
+        let deploy_result = std::process::Command::new("cmd.exe")
+            .args(&["/c", "cd", "C:\\Users\\armon\\DEV\\HOI4_MD_FT\\focusflow", "&&", "git", "add", ".", "&&", "git", "diff", "--staged", "--quiet"])
+            .output();
+
+        match deploy_result {
+            Ok(output) => {
+                // If there are staged changes, commit and push
+                if !output.status.success() {
+                    let commit_result = std::process::Command::new("cmd.exe")
+                        .args(&["/c", "cd", "C:\\Users\\armon\\DEV\\HOI4_MD_FT\\focusflow", "&&", "git", "commit", "-m", "FocusFlow: update focus tree", "&&", "git", "push"])
+                        .output();
+
+                    match commit_result {
+                        Ok(output) if output.status.success() => {
+                            self.status_message = "✅ Deployed: saved and pushed to git".to_string();
+                        }
+                        Ok(output) => {
+                            let stderr = String::from_utf8_lossy(&output.stderr);
+                            self.status_message = format!("⚠️ Saved but git push failed: {}", stderr.lines().next().unwrap_or("unknown error"));
+                        }
+                        Err(e) => {
+                            self.status_message = format!("⚠️ Saved but git error: {}", e);
+                        }
+                    }
+                } else {
+                    self.status_message = "✅ Saved: no git changes to push".to_string();
+                }
+            }
+            Err(e) => {
+                self.status_message = format!("⚠️ Saved but git error: {}", e);
             }
         }
     }
@@ -250,6 +294,19 @@ impl FocusFlowApp {
             );
             self.validation = Some(result);
             self.show_validation = true;
+        }
+    }
+
+    /// Generate diff between original and current tree
+    pub fn generate_intel_logs(&mut self) {
+        if let (Some(original), Some(current)) = (&self.original_tree, &self.tree) {
+            self.diff_content = writer::generate_diff(original, current);
+        } else if let Some(current) = &self.tree {
+            self.diff_content = format!("📄 Tree: {}\n📊 Total focuses: {}\n📝 Modified: {}",
+                current.id,
+                current.focuses.len(),
+                if current.modified { "Yes" } else { "No" }
+            );
         }
     }
     
@@ -446,6 +503,7 @@ impl eframe::App for FocusFlowApp {
         let surface = egui::Color32::from_rgb(15, 17, 21);
         let on_surface = egui::Color32::from_rgb(229, 231, 235);
         let muted_gray = egui::Color32::from_rgb(107, 114, 128);
+        let deep_black = egui::Color32::from_rgb(11, 12, 16);
         
         egui::CentralPanel::default().frame(egui::Frame::NONE.fill(surface)).show(ctx, |ui| {
             if self.view_mode == AppView::Canvas {
@@ -532,7 +590,7 @@ impl eframe::App for FocusFlowApp {
                     ui.horizontal(|ui| {
                         ui.label(egui::RichText::new("OPERATIONAL READINESS").color(on_surface).size(12.0).strong());
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            ui.label(egui::RichText::new(if self.validation.as_ref().map_or(false, |v| v.is_ok()) { "94%" } else { "42%" }).color(secondary).size(24.0).strong());
+                            ui.label(egui::RichText::new(if self.validation.as_ref().map_or(false, |v| v.is_ok()) { "94%" } else { "42%" }).color(warning_amber).size(24.0).strong());
                         });
                     });
                     ui.add_space(8.0);
@@ -555,7 +613,7 @@ impl eframe::App for FocusFlowApp {
                     .fixed_pos(egui::pos2(ctx.screen_rect().right() - 780.0, ctx.screen_rect().bottom() - 280.0))
                     .fixed_size(egui::vec2(340.0, 250.0))
                     .resizable(false).title_bar(false)
-                    .frame(egui::Frame::window(&ctx.style()).fill(egui::Color32::from_rgba_unmultiplied(147, 0, 10, 50)).stroke(egui::Stroke::new(1.0, error)))
+                    .frame(egui::Frame::window(&ctx.style()).fill(egui::Color32::from_rgba_unmultiplied(147, 0, 10, 50)).stroke(egui::Stroke::new(1.0, error_crimson)))
                     .open(&mut v_open)
                     .show(ctx, |ui| {
                         ui.horizontal(|ui| {
@@ -567,6 +625,42 @@ impl eframe::App for FocusFlowApp {
                     });
                 self.show_validation = v_open;
             }
+
+            // INTEL & LOGS panel
+            if self.show_diff {
+                let mut intel_open = true;
+                egui::Window::new("Intel & Logs")
+                    .id(egui::Id::new("intel_logs"))
+                    .fixed_pos(egui::pos2(ctx.screen_rect().right() - 780.0, ctx.screen_rect().bottom() - 380.0))
+                    .fixed_size(egui::vec2(740.0, 350.0))
+                    .resizable(true).title_bar(false)
+                    .frame(egui::Frame::window(&ctx.style()).fill(surface_high).stroke(egui::Stroke::new(1.0, tactical_blue)))
+                    .open(&mut intel_open)
+                    .show(ctx, |ui| {
+                        ui.horizontal(|ui| {
+                            ui.label(egui::RichText::new("SYSTEM").color(tactical_blue).size(10.0).monospace());
+                            ui.label(egui::RichText::new("INTEL & LOGS").color(tactical_blue).size(12.0).strong());
+                            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                if ui.small_button("🔄 Refresh").clicked() {
+                                    self.generate_intel_logs();
+                                }
+                            });
+                        });
+                        ui.add_space(8.0);
+                        egui::ScrollArea::vertical().auto_shrink([false, true]).show(ui, |ui| {
+                            egui::Frame::dark_canvas(&ui.style()).show(ui, |ui| {
+                                ui.add(
+                                    egui::TextEdit::multiline(&mut self.diff_content.clone())
+                                        .code_editor()
+                                        .desired_rows(15)
+                                        .desired_width(ui.available_width())
+                                        .lock_focus(true)
+                                );
+                            });
+                        });
+                    });
+                self.show_diff = intel_open;
+            }
         });
 
         // Top Navigation Header
@@ -574,7 +668,7 @@ impl eframe::App for FocusFlowApp {
             .frame(egui::Frame::NONE.fill(egui::Color32::from_rgba_unmultiplied(17, 19, 23, 220)).inner_margin(egui::Margin::symmetric(24, 16)))
             .show(ctx, |ui| {
                 ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("FocusFlow").color(primary).size(20.0).strong());
+                    ui.label(egui::RichText::new("FocusFlow").color(tactical_blue).size(20.0).strong());
                     
                     let sep_rect = egui::Rect::from_min_size(ui.cursor().min + egui::vec2(16.0, 4.0), egui::vec2(1.0, 20.0));
                     ui.painter().rect_filled(sep_rect, 0.0, egui::Color32::from_rgba_unmultiplied(134, 148, 138, 76));
@@ -582,13 +676,18 @@ impl eframe::App for FocusFlowApp {
 
                     if ui.selectable_label(self.view_mode == AppView::Canvas, egui::RichText::new("NODES").size(12.0).strong()).clicked() { self.view_mode = AppView::Canvas; }
                     if ui.selectable_label(self.view_mode == AppView::List, egui::RichText::new("ASSETS").size(12.0).strong()).clicked() { self.view_mode = AppView::List; }
-                    if ui.selectable_label(self.show_diff, egui::RichText::new("INTEL & LOGS").size(12.0).strong()).clicked() { self.show_diff = !self.show_diff; }
+                    if ui.selectable_label(self.show_diff, egui::RichText::new("INTEL & LOGS").size(12.0).strong()).clicked() {
+                        self.show_diff = !self.show_diff;
+                        if self.show_diff {
+                            self.generate_intel_logs();
+                        }
+                    }
 
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         let deploy_btn = ui.add(egui::Button::new(
                             egui::RichText::new("DEPLOY OPERATIONS").color(deep_black).size(12.0).strong()
                         ).fill(egui::Color32::from_rgb(16, 185, 129)));
-                        if deploy_btn.clicked() { self.save_file(); }
+                        if deploy_btn.clicked() { self.deploy_operations(); }
 
                         ui.add_space(16.0);
 
@@ -772,33 +871,33 @@ impl FocusFlowApp {
             });
             return;
         }
-        
+
         if let Some(idx) = self.selected_focus_idx {
             if let Some(tree) = &self.tree {
                 if let Some(focus) = tree.focuses.get(idx) {
                     ui.heading(format!("{} {}", focus.category_icon(), focus.id));
                     ui.add_space(8.0); // separator removed
-                    
+
                     // Info grid
                     egui::Grid::new("focus_info").striped(true).show(ui, |ui| {
                         ui.label("Icon:");
                         ui.label(focus.icon.as_deref().unwrap_or("(none)"));
                         ui.end_row();
-                        
+
                         ui.label("Position:");
                         ui.label(format!("({}, {})", focus.x, focus.y));
                         ui.end_row();
-                        
+
                         if let Some(ref rel) = focus.relative_position_id {
                             ui.label("Relative to:");
                             ui.label(rel);
                             ui.end_row();
                         }
-                        
+
                         ui.label("Cost:");
                         ui.label(format!("{:.1} days", focus.cost.unwrap_or(0.0)));
                         ui.end_row();
-                        
+
                         ui.label("Category:");
                         ui.colored_label(egui::Color32::from_rgb(
                             (focus.category_color()[0] * 255.0) as u8,
@@ -806,32 +905,32 @@ impl FocusFlowApp {
                             (focus.category_color()[2] * 255.0) as u8,
                         ), focus.category());
                         ui.end_row();
-                        
+
                         ui.label("Bypass:");
                         ui.label(if focus.bypass_if_unavailable { "Yes" } else { "No" });
                         ui.end_row();
-                        
+
                         if !focus.prerequisites.is_empty() {
                             ui.label("Prerequisites:");
                             ui.label(&focus.prerequisites.join(", "));
                             ui.end_row();
                         }
-                        
+
                         if !focus.mutually_exclusive.is_empty() {
                             ui.label("Mutually Excl:");
                             ui.label(&focus.mutually_exclusive.join(", "));
                             ui.end_row();
                         }
-                        
+
                         if !focus.search_filters.is_empty() {
                             ui.label("Filters:");
                             ui.label(&focus.search_filters.join(", "));
                             ui.end_row();
                         }
                     });
-                    
+
                     ui.add_space(8.0); // separator removed
-                    
+
                     // Preview of completion_reward
                     if let Some(ref reward) = focus.completion_reward_raw {
                         ui.label("Completion Reward:");
@@ -846,7 +945,7 @@ impl FocusFlowApp {
                             );
                         });
                     }
-                    
+
                     // Preview of ai_will_do
                     if let Some(ref ai) = focus.ai_will_do_raw {
                         ui.label("AI Will Do:");
@@ -861,12 +960,12 @@ impl FocusFlowApp {
                             );
                         });
                     }
-                    
+
                     ui.add_space(8.0); // separator removed
-                    
+
                     // Action buttons
                     ui.horizontal(|ui| {
-                        if ui.button("✏️ Edit (E)").clicked() {
+                        if ui.button("✏️ Edit Full (E)").clicked() {
                             self.open_editor();
                         }
                         if ui.button("📋 Duplicate").clicked() {
@@ -880,7 +979,12 @@ impl FocusFlowApp {
             }
         } else {
             ui.centered_and_justified(|ui| {
-                ui.label("← Select a focus from the list to view details");
+                ui.vertical_centered(|ui| {
+                    ui.label("← Select a focus from the Assets list");
+                    ui.label("");
+                    ui.label("Click a focus to view details");
+                    ui.label("Double-click or click 'Edit Full' to edit");
+                });
             });
         }
     }
@@ -1173,8 +1277,9 @@ impl FocusFlowApp {
                     }
                 });
             }
-            
-    
+        }
+    }
+
     /// Render a high-fidelity tactical node (Palantir/Millennium style)
     fn render_tactical_node(
         &self,

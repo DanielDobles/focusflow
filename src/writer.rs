@@ -126,7 +126,6 @@ pub fn write_single_focus(focus: &FocusNode) -> String {
 }
 
 /// Generate a diff between two versions of a tree
-#[allow(dead_code)]
 pub fn generate_diff(old_tree: &FocusTree, new_tree: &FocusTree) -> String {
     let mut out = String::new();
     
